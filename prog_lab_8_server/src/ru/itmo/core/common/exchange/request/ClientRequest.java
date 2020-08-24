@@ -1,27 +1,17 @@
 package ru.itmo.core.common.exchange.request;
 
 
-
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.User;
 
 import java.io.Serializable;
 
 
-
-public class Request implements Serializable {
+public abstract class ClientRequest implements Serializable {
 
 
     private Client client;
     private User user;
-    private ClientRequest clientRequest;
-
-
-
-    public Request(ClientRequest clientRequest) {
-        setClientRequest(clientRequest);
-    }
-
 
 
 
@@ -49,20 +39,6 @@ public class Request implements Serializable {
             throw new IllegalArgumentException("Invalid user value : 'null'.");
 
         this.user = user;
-    }
-
-
-    public ClientRequest getClientRequest() {
-        return clientRequest;
-    }
-
-
-    private void setClientRequest(ClientRequest clientRequest) {
-
-        if (clientRequest == null)
-            throw new IllegalArgumentException("Invalid clientRequest value : 'null'.");
-
-        this.clientRequest = clientRequest;
     }
 
 
