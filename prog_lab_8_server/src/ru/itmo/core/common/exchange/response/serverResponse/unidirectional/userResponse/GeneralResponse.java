@@ -5,7 +5,7 @@ public class GeneralResponse extends UserCommandResponse {
 
 
 
-    UserCommandStatus userCommandStatus;
+    UserCommandResponseStatus userCommandResponseStatus;
     String userCommandMessage;
 
     ServerProcessStatus serverProcessStatus;
@@ -14,14 +14,14 @@ public class GeneralResponse extends UserCommandResponse {
 
 
 
-    public GeneralResponse(UserCommandStatus userCommandStatus, String userCommandMessage) {
-        this.userCommandStatus = userCommandStatus;
+    public GeneralResponse(UserCommandResponseStatus userCommandStatus, String userCommandMessage) {
+        this.userCommandResponseStatus = userCommandStatus;
         this.userCommandMessage = userCommandMessage;
     }
 
 
-    public GeneralResponse(UserCommandStatus userCommandStatus, String userCommandMessage, ServerProcessStatus serverProcessStatus, String serverProcessMessage) {
-        this.userCommandStatus = userCommandStatus;
+    public GeneralResponse(UserCommandResponseStatus userCommandResponseStatus, String userCommandMessage, ServerProcessStatus serverProcessStatus, String serverProcessMessage) {
+        this.userCommandResponseStatus = userCommandResponseStatus;
         this.userCommandMessage = userCommandMessage;
         this.serverProcessStatus = serverProcessStatus;
         this.serverProcessMessage = serverProcessMessage;
@@ -33,7 +33,7 @@ public class GeneralResponse extends UserCommandResponse {
     public boolean anErrorOccurred() {
 
         return
-                userCommandStatus.equals(UserCommandStatus.ERROR)
+                userCommandResponseStatus.equals(UserCommandResponseStatus.ERROR)
                 || serverProcessStatus.equals(ServerProcessStatus.ERROR);
 
     }
@@ -41,8 +41,8 @@ public class GeneralResponse extends UserCommandResponse {
 
 
 
-    public UserCommandStatus getUserCommandStatus() {
-        return userCommandStatus;
+    public UserCommandResponseStatus getUserCommandResponseStatus() {
+        return userCommandResponseStatus;
     }
 
 

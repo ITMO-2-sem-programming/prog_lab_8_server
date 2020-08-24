@@ -2,7 +2,7 @@ package ru.itmo.core.common.exchange.response.serverResponse.unidirectional.user
 
 
 
-public enum UserCommandStatus {
+public enum UserCommandResponseStatus {
     OK,
     ERROR;
 }
