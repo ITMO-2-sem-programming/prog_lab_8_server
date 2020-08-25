@@ -3,7 +3,7 @@ package ru.itmo.core.command;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.HelpCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.main.MainMultithreading;
 
 
@@ -30,7 +30,7 @@ public class HelpCommand extends Command {
 
 
 
-    private void execute(HelpCommandRequest request) {
+    public void execute(HelpCommandRequest request) {
 
         Client client = request.getClient();
 
@@ -54,7 +54,7 @@ public class HelpCommand extends Command {
 
         GeneralResponse generalResponse = new GeneralResponse(
                 client,
-                UserCommandResponseStatus.CANCEL,
+                UCStatus.OK,
                 help
         );
 

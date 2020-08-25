@@ -4,7 +4,7 @@ import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.ShowCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.main.MainMultithreading;
 
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -32,10 +32,12 @@ public class ShowCommand extends Command {
 
 
     private void execute(ShowCommandRequest request) {
-        Client client = request.getClient();;
+
+        Client client = request.getClient();
+
         GeneralResponse generalResponse = new GeneralResponse(
                 client,
-                UserCommandResponseStatus.OK,
+                UCStatus.OK,
                 collection.toString());
 
         main.addUnidirectionalResponse(generalResponse);

@@ -8,7 +8,8 @@ import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.Rem
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.RemoveElementsResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.RemoveOwnedElementsIDServiceResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
+import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.DataBaseManager;
@@ -49,6 +50,8 @@ public class RemoveAllByGenreCommand extends Command {
 
         GeneralResponse generalResponse = null;
 
+        boolean collectionChanged = false;
+
         ArrayList<Integer> musicBandsIDToRemove = new ArrayList<>();
 
         try {
@@ -58,7 +61,7 @@ public class RemoveAllByGenreCommand extends Command {
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         e.getMessage()
                 );
                 throw  new StopException();
@@ -83,27 +86,32 @@ public class RemoveAllByGenreCommand extends Command {
             if ( musicBandsIDToRemove.isEmpty() ) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.NEUTRAL,
                         "No elements were removed."
                 );
 
             } else {
+                collectionChanged = true;
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.OK,
+                        UCStatus.OK,
                         String.format(
                                 "Elements with IDs = '%s' were successfully removed.",
                                 musicBandsIDToRemove)
                 );
             }
 
-        } catch (StopException ignored) {}
-
-        finally {
+        } catch (StopException ignored) {
+        } catch (DBException e) {
+            generalResponse = new GeneralResponse(
+                    client,
+                    UCStatus.ERROR,
+                    e.getMessage());
+        } finally {
 
             if (generalResponse != null) {
 
-                if ( ! generalResponse.isCancelled() ) {
+                if ( collectionChanged ) {
                     main.addMultidirectionalResponse(new RemoveElementsResponse(musicBandsIDToRemove));
                     main.addUnidirectionalResponse(new RemoveOwnedElementsIDServiceResponse(client, musicBandsIDToRemove));
                 }

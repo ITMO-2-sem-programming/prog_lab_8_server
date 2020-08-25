@@ -6,7 +6,7 @@ import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.UpdateCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.UpdateElementResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.DataBaseManager;
@@ -50,7 +50,8 @@ public class UpdateCommand extends Command {
 
         GeneralResponse generalResponse = null;
 
-asdasd catch DBException todo
+        boolean collectionChanged = false;
+
         try {
 
             try {
@@ -58,7 +59,7 @@ asdasd catch DBException todo
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         e.getMessage());
                 throw new StopException();
             }
@@ -67,7 +68,7 @@ asdasd catch DBException todo
             if ( ! collection.containsKey(ID)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         "No element with such 'ID' in the collection.");
                 throw new StopException();
             }
@@ -76,7 +77,7 @@ asdasd catch DBException todo
             if ( ! DataBaseManager.userOwnsMusicBand(connection, user, ID)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         String.format(
                                 "You can't update element with ID = '%s' as you don't own it.",
                                 ID)
@@ -88,15 +89,24 @@ asdasd catch DBException todo
             DataBaseManager.updateMusicBandByID(connection, element, ID);
             collection.put(ID, element);
 
+            collectionChanged = true;
+
             generalResponse = new GeneralResponse(
                     client,
-                    UserCommandResponseStatus.OK,
+                    UCStatus.OK,
                     String.format(
                             "Element with ID = '%s' successfully updated.",
                             ID)
             );
 
-        } catch (StopException ignored) {}
+        } catch (StopException ignored) {
+        } catch (DBException e) {
+            generalResponse = new GeneralResponse(
+                    client,
+                    UCStatus.ERROR,
+                    e.getMessage());
+        }
+
 
         finally {
 
@@ -104,7 +114,7 @@ asdasd catch DBException todo
 
             if (generalResponse != null) {
 
-                if ( ! generalResponse.isCancelled()) {
+                if ( collectionChanged ) {
                     main.addMultidirectionalResponse(new UpdateElementResponse(ID, element));
                 }
 

@@ -2,9 +2,9 @@ package ru.itmo.core.command;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
-import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.InsertCommandRequest;
+import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.InfoCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.main.MainMultithreading;
 
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -26,7 +26,7 @@ public class InfoCommand extends Command {
                     "\nNumber of arguments: 0\n";
 
 
-    public void execute(InsertCommandRequest request) {
+    public void execute(InfoCommandRequest request) {
 
         Client client = request.getClient();
 
@@ -42,7 +42,7 @@ public class InfoCommand extends Command {
 
         GeneralResponse generalResponse = new GeneralResponse(
                 client,
-                UserCommandResponseStatus.CANCEL,
+                UCStatus.OK,
                 info
         );
 

@@ -7,7 +7,7 @@ public class GeneralResponse extends UserCommandResponse {
 
 
 
-    UserCommandResponseStatus userCommandResponseStatus;
+    UCStatus userCommandResponseStatus;
     String userCommandMessage;
 
     ServerProcessStatus serverProcessStatus;
@@ -16,14 +16,14 @@ public class GeneralResponse extends UserCommandResponse {
 
 
 
-    public GeneralResponse(Client client, UserCommandResponseStatus userCommandStatus, String userCommandMessage) {
+    public GeneralResponse(Client client, UCStatus userCommandStatus, String userCommandMessage) {
         super(client);
         this.userCommandResponseStatus = userCommandStatus;
         this.userCommandMessage = userCommandMessage;
     }
 
 
-    public GeneralResponse(Client client, UserCommandResponseStatus userCommandResponseStatus, String userCommandMessage, ServerProcessStatus serverProcessStatus, String serverProcessMessage) {
+    public GeneralResponse(Client client, UCStatus userCommandResponseStatus, String userCommandMessage, ServerProcessStatus serverProcessStatus, String serverProcessMessage) {
         super(client);
         this.userCommandResponseStatus = userCommandResponseStatus;
         this.userCommandMessage = userCommandMessage;
@@ -37,7 +37,7 @@ public class GeneralResponse extends UserCommandResponse {
     public boolean isCancelled() {
 
         return
-                userCommandResponseStatus.equals(UserCommandResponseStatus.CANCEL)
+                userCommandResponseStatus.equals(UCStatus.ERROR)
                 || serverProcessStatus.equals(ServerProcessStatus.ERROR);
 
     }
@@ -45,7 +45,7 @@ public class GeneralResponse extends UserCommandResponse {
 
 
 
-    public UserCommandResponseStatus getUserCommandResponseStatus() {
+    public UCStatus getUserCommandResponseStatus() {
         return userCommandResponseStatus;
     }
 

@@ -6,7 +6,8 @@ import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.ReplaceIfLowerCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.UpdateElementResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
+import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.DataBaseManager;
@@ -49,6 +50,8 @@ public class ReplaceIfLowerCommand extends Command {
 
         GeneralResponse generalResponse = null;
 
+        boolean collectionChanged = false;
+
         try {
 
             try {
@@ -56,7 +59,7 @@ public class ReplaceIfLowerCommand extends Command {
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         e.getMessage());
                 throw new StopException();
             }
@@ -64,7 +67,7 @@ public class ReplaceIfLowerCommand extends Command {
             if ( ! collection.containsKey(ID)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         String.format(
                                 "No element with ID = '%s' in the collection.",
                                 ID)
@@ -75,7 +78,7 @@ public class ReplaceIfLowerCommand extends Command {
             if ( ! DataBaseManager.userOwnsMusicBand(connection, user, element)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         String.format(
                                 "You can't replace element with ID = '%s' as you don't own it.",
                                 ID)
@@ -89,7 +92,7 @@ public class ReplaceIfLowerCommand extends Command {
 
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.NEUTRAL,
                         String.format(
                                 "Element wasn't replaced as the new one is not lower than the element with ID = '%s'.",
                                 ID)
@@ -102,10 +105,11 @@ public class ReplaceIfLowerCommand extends Command {
             DataBaseManager.updateMusicBandByID(connection, element, ID);
             collection.put(ID, element);
 
+            collectionChanged = true;
 
             generalResponse = new GeneralResponse(
                     client,
-                    UserCommandResponseStatus.OK,
+                    UCStatus.OK,
                     String.format(
                             "Element with ID = '%s' was successfully replaced.",
                             ID)
@@ -113,6 +117,11 @@ public class ReplaceIfLowerCommand extends Command {
 
         } catch (StopException ignored) {
 
+        } catch (DBException e) {
+            generalResponse = new GeneralResponse(
+                    client,
+                    UCStatus.ERROR,
+                    e.getMessage());
         } finally {
 
             main.returnConnection(connection);
@@ -120,7 +129,7 @@ public class ReplaceIfLowerCommand extends Command {
             if (generalResponse != null) {
 
 
-                if ( ! generalResponse.isCancelled() ) {
+                if ( collectionChanged ) {
                     main.addMultidirectionalResponse(new UpdateElementResponse(ID, element));
                 }
 

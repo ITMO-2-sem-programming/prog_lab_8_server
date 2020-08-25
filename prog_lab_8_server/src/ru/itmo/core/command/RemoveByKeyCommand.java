@@ -7,7 +7,8 @@ import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.Rem
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.RemoveElementsResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.RemoveOwnedElementsIDServiceResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
+import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.DataBaseManager;
@@ -48,6 +49,8 @@ public class RemoveByKeyCommand extends Command {
 
         GeneralResponse generalResponse = null;
 
+        boolean collectionChanged = false;
+
         try {
 
             try {
@@ -55,7 +58,7 @@ public class RemoveByKeyCommand extends Command {
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         e.getMessage());
                 throw new StopException();
             }
@@ -63,7 +66,7 @@ public class RemoveByKeyCommand extends Command {
             if ( ! collection.containsKey(ID)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         String.format(
                             "No element with ID = '%s' in the collection.",
                                 ID)
@@ -74,7 +77,7 @@ public class RemoveByKeyCommand extends Command {
             if ( ! DataBaseManager.userOwnsMusicBand(connection, user, ID)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         String.format(
                             "You can't remove element with ID = '%s' as you don't own it.",
                         ID)
@@ -87,23 +90,29 @@ public class RemoveByKeyCommand extends Command {
             DataBaseManager.removeOwnedMusicBand(connection, user, ID);
             collection.remove(ID);
 
+            collectionChanged = true;
+
             generalResponse = new GeneralResponse(
                     client,
-                    UserCommandResponseStatus.OK,
+                    UCStatus.OK,
                     String.format(
                             "Element with ID = '%s' successfully removed.",
                             ID)
             );
 
-        } catch (StopException ignored) {}
-
-        finally {
+        } catch (StopException ignored) {
+        } catch (DBException e) {
+            generalResponse = new GeneralResponse(
+                    client,
+                    UCStatus.ERROR,
+                    e.getMessage());
+        } finally {
 
             main.returnConnection(connection);
 
             if (generalResponse != null) {
 
-                if ( ! generalResponse.isCancelled()) {
+                if ( collectionChanged ) {
                     main.addMultidirectionalResponse(new RemoveElementsResponse(ID));
                     main.addUnidirectionalResponse(new RemoveOwnedElementsIDServiceResponse(client, ID));
                 }

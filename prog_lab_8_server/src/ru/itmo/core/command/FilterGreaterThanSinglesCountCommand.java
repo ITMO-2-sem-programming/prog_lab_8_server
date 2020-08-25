@@ -2,16 +2,14 @@ package ru.itmo.core.command;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
-import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.FilterGreaterThanSinglesCountCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.MainMultithreading;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
@@ -41,8 +39,6 @@ public class FilterGreaterThanSinglesCountCommand extends Command {
 
     public void execute(FilterGreaterThanSinglesCountCommandRequest request) {
 
-        Connection connection = main.getConnection();
-
         Integer singlesCount = request.getSinglesCount();
 
         Client client = request.getClient();
@@ -58,7 +54,7 @@ public class FilterGreaterThanSinglesCountCommand extends Command {
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         e.getMessage()
                 );
                 throw  new StopException();
@@ -68,7 +64,7 @@ public class FilterGreaterThanSinglesCountCommand extends Command {
 
             generalResponse = new GeneralResponse(
                     client,
-                    UserCommandResponseStatus.CANCEL,
+                    UCStatus.OK,
                     filteredMusicBands
             );
         } catch (StopException ignore) {}

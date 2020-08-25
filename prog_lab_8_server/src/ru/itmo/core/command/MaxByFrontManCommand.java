@@ -6,7 +6,7 @@ import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.MaxByFrontManCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.MainMultithreading;
@@ -52,7 +52,7 @@ public class MaxByFrontManCommand extends Command{
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UserCommandResponseStatus.CANCEL,
+                        UCStatus.ERROR,
                         e.getMessage()
                 );
                 throw  new StopException();
@@ -64,7 +64,7 @@ public class MaxByFrontManCommand extends Command{
 
             generalResponse = new GeneralResponse(
                     client,
-                    UserCommandResponseStatus.OK,
+                    UCStatus.OK,
                     greatestFrontMan
             );
 

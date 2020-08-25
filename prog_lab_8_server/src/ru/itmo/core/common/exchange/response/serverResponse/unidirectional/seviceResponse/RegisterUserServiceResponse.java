@@ -3,7 +3,35 @@ package ru.itmo.core.common.exchange.response.serverResponse.unidirectional.sevi
 import ru.itmo.core.common.exchange.Client;
 
 public class RegisterUserServiceResponse extends ServiceResponse {
-    public RegisterUserServiceResponse(Client client) {
+
+
+    private boolean registered;
+    private String message;
+
+
+
+    public RegisterUserServiceResponse(Client client, boolean registered) {
         super(client);
-    }// TODO: 24.08.2020
+        this.registered = registered;
+    }
+
+
+    public RegisterUserServiceResponse(Client client, boolean registered, String message) {
+        super(client);
+        this.registered = registered;
+        this.message = message;
+    }
+
+
+
+
+    public boolean isRegistered() {
+        return registered;
+    }
+
+
+    public String getMessage() {
+        return message;
+    }
+
 }

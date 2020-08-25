@@ -7,7 +7,8 @@ import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.Ins
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.AddElementResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.AddOwnedElementsIDServiceResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
+import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.DataBaseManager;
 import ru.itmo.core.main.MainMultithreading;
@@ -48,6 +49,8 @@ public class InsertCommand extends Command {
         Client client = request.getClient();
 
         GeneralResponse generalResponse = null;
+
+        boolean collectionChanged = false;
         
         Integer ID = null;
 
@@ -59,24 +62,30 @@ public class InsertCommand extends Command {
             element.setId(ID);
             collection.put(ID, element);
 
+            collectionChanged = true;
+
             generalResponse = new GeneralResponse(
                     client,
-                    UserCommandResponseStatus.OK,
+                    UCStatus.OK,
                     String.format(
                             "Element with ID = '%s' successfully added to collection.",
                             ID)
             );
 
 
-        } catch (StopException ignore) {}
-
-        finally {
+        } catch (StopException ignore) {
+        } catch (DBException e) {
+            generalResponse = new GeneralResponse(
+                    client,
+                    UCStatus.ERROR,
+                    e.getMessage());
+        } finally {
 
             main.returnConnection(connection);
 
             if (generalResponse != null) {
 
-                if ( ! generalResponse.isCancelled() ) {
+                if ( collectionChanged ) {
                     main.addMultidirectionalResponse(new AddElementResponse(element));
                     main.addUnidirectionalResponse(new AddOwnedElementsIDServiceResponse(client, ID));
                 }
