@@ -7,22 +7,22 @@ import ru.itmo.core.common.classes.MusicBand;
 public class RemoveLowerKeyCommandRequest extends UserCommandRequest {
 
 
-    public RemoveLowerKeyCommandRequest(Integer ID) {
+    public RemoveLowerKeyCommandRequest(java.lang.Integer ID) {
         setID(ID);
     }
 
 
-    private Integer ID;
+    private java.lang.Integer ID;
 
 
 
 
-    public Integer getID() {
+    public java.lang.Integer getID() {
         return ID;
     }
 
 
-    private void setID(Integer ID) {
+    private void setID(java.lang.Integer ID) {
 
         if ( ! (ID >= 1))
             throw new IllegalArgumentException(

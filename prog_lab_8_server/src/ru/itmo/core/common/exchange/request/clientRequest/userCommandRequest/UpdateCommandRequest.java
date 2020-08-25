@@ -7,12 +7,12 @@ import ru.itmo.core.common.classes.MusicBand;
 public class UpdateCommandRequest extends UserCommandRequest {
 
 
-    private Integer ID;
+    private java.lang.Integer ID;
     private MusicBand element;
 
 
 
-    public UpdateCommandRequest(Integer ID, MusicBand element) {
+    public UpdateCommandRequest(java.lang.Integer ID, MusicBand element) {
         setID(ID);
         setElement(element);
     }
@@ -20,12 +20,12 @@ public class UpdateCommandRequest extends UserCommandRequest {
 
 
 
-    public Integer getID() {
+    public java.lang.Integer getID() {
         return ID;
     }
 
 
-    private void setID(Integer ID) {
+    private void setID(java.lang.Integer ID) {
 
         if ( ! (ID >= 1))
             throw new IllegalArgumentException(

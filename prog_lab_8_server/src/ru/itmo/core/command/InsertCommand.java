@@ -1,13 +1,34 @@
 package ru.itmo.core.command;
 
 import ru.itmo.core.common.classes.MusicBand;
-import ru.itmo.main.DataBaseManager;
-import ru.itmo.core.common.User;
+import ru.itmo.core.common.exchange.Client;
+import ru.itmo.core.common.exchange.User;
+import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.InsertCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.AddElementResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.AddOwnedElementsIDServiceResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.exception.StopException;
+import ru.itmo.core.main.DataBaseManager;
+import ru.itmo.core.main.MainMultithreading;
+
 
 import java.sql.Connection;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+
+
 public class InsertCommand extends Command {
+
+
+
+    private MainMultithreading main;
+    private ConcurrentSkipListMap<Integer, MusicBand> collection;
+
+    public InsertCommand(MainMultithreading main) {
+        setMain(main);
+        setCollection(main.getCollection());
+    }
 
     public static String syntaxDescription =
             "\nCommand: insert <key> {element}" +
@@ -17,21 +38,70 @@ public class InsertCommand extends Command {
                     "\n   Second argument: element (MusicBand)\n";
 
 
-    /**
-     * @param collection
-     */
-    public static String execute(ConcurrentSkipListMap<Integer, MusicBand> collection, Connection connection, User user, MusicBand musicBand) {
 
-//        if (collection.containsKey(key))
-//            throw new InvalidCommandException("Error: Collection already contains musicBand with key: " + key + ". Command is impossible.");
+    public void execute(InsertCommandRequest request) {
+
+        Connection connection = main.getConnection();
+
+        MusicBand element = request.getElement();
+        User user = request.getUser();
+        Client client = request.getClient();
+
+        GeneralResponse generalResponse = null;
+        
+        Integer ID = null;
+
+        try {
+            
+            ID = DataBaseManager.addMusicBand(connection, element);
+            DataBaseManager.addOwnedMusicBandIDByUserID(connection, DataBaseManager.getUserIDByUserName(connection, user.getLogin()), ID);
+
+            element.setId(ID);
+            collection.put(ID, element);
+
+            generalResponse = new GeneralResponse(
+                    client,
+                    UserCommandResponseStatus.OK,
+                    String.format(
+                            "Element with ID = '%s' successfully added to collection.",
+                            ID)
+            );
 
 
-       int musicBandID = DataBaseManager.addMusicBand(connection, musicBand);
-        DataBaseManager.addOwnedMusicBandIDByUserID(connection, DataBaseManager.getUserIDByUserName(connection, user.getLogin()), musicBandID);
+        } catch (StopException ignore) {}
 
-        musicBand.setId(musicBandID);
-        collection.put(musicBandID, musicBand);
+        finally {
 
-        return String.format("Reply: MusicBand was successfully added with ID : '%s' .", musicBandID);
+            main.returnConnection(connection);
+
+            if (generalResponse != null) {
+
+                if ( ! generalResponse.isCancelled() ) {
+                    main.addMultidirectionalResponse(new AddElementResponse(element));
+                    main.addUnidirectionalResponse(new AddOwnedElementsIDServiceResponse(client, ID));
+                }
+
+                main.addUnidirectionalResponse(generalResponse);
+            }
+        }
     }
+
+
+    public void setMain(MainMultithreading main) {
+
+        if (main == null)
+            throw new IllegalArgumentException("Invalid main value : 'null'.");
+
+        this.main = main;
+    }
+
+
+    public void setCollection(ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection) {
+
+        if (collection == null)
+            throw new IllegalArgumentException("Invalid collection value : 'null'");
+
+        this.collection = collection;
+    }
+
 }

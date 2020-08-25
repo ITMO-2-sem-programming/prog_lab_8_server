@@ -7,37 +7,12 @@ public class InsertCommandRequest extends UserCommandRequest {
 
 
 
-    private Integer ID;
     private MusicBand element;
 
 
 
-    public InsertCommandRequest(Integer ID, MusicBand element) {
-        setID(ID);
+    public InsertCommandRequest(java.lang.Integer ID, MusicBand element) {
         setElement(element);
-    }
-
-
-
-
-    public Integer getID() {
-        return ID;
-    }
-
-
-    private void setID(Integer ID) {
-
-        if ( ! (ID >= 1))
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Invalid id : '%s'"
-                                    + "\n" + MusicBand.musicBandFieldsDescription.get("id"),
-                            ID
-                    )
-            );
-
-        this.ID = ID;
-
     }
 
 

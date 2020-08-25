@@ -21,7 +21,8 @@ import java.util.concurrent.*;
  * Runs the server in multithreading mode.
  */
 
-
+// TODO: 24.08.2020 Пусть команды сами берут новый Connection из Main + инициализация коллекции
+//  collection = main.getCollection() в конструкторе каждой команды, кой эо нужно
 
 public class MainMultithreading {
 
@@ -32,7 +33,7 @@ public class MainMultithreading {
     static final String DB_USER = "s284704";
     static final String DB_PASS = "hxy284";
 
-    static ConcurrentSkipListMap<Integer, MusicBand> collection; // Коллекция
+    static ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection; // Коллекция
     
     static boolean isRunning;
     static final int sendResponsePoolCapacity = 8;
@@ -56,7 +57,7 @@ public class MainMultithreading {
         if (args.length > 1) throw new IllegalArgumentException("Error: Gets only server port argument.");
         if (args.length == 1) {
             try {
-                serverPort = Integer.parseInt(args[0]);
+                serverPort = java.lang.Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Error: Incorrect server port value. " +
                         "\nMust be: " +
@@ -190,7 +191,7 @@ public class MainMultithreading {
     }
 
 
-    public synchronized static Connection getConnection() {
+    public synchronized Connection getConnection() {
 
         if (connectionsList.isEmpty()) {
             try {
@@ -204,7 +205,7 @@ public class MainMultithreading {
     }
 
 
-    public synchronized static void returnConnection(Connection connection) {
+    public synchronized void returnConnection(Connection connection) {
         connectionsList.add(connection);
     }
 
@@ -219,6 +220,10 @@ public class MainMultithreading {
 
     public static LinkedBlockingQueue<MultidirectionalResponse> getMultidirectionalResponsesQueue() {
         return multidirectionalResponsesQueue;
+    }
+
+    public ConcurrentSkipListMap<java.lang.Integer, MusicBand> getCollection() {
+        return collection;
     }
 }
 

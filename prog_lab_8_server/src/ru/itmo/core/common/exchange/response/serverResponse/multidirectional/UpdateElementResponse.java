@@ -6,12 +6,12 @@ import ru.itmo.core.common.classes.MusicBand;
 public class UpdateElementResponse extends MultidirectionalResponse {
 
 
-    private Integer elementID;
+    private java.lang.Integer elementID;
     private MusicBand element;
 
 
 
-    public UpdateElementResponse(Integer elementID, MusicBand element) {
+    public UpdateElementResponse(java.lang.Integer elementID, MusicBand element) {
         this.elementID = elementID;
         this.element = element;
     }
@@ -19,12 +19,12 @@ public class UpdateElementResponse extends MultidirectionalResponse {
 
 
 
-    public Integer getElementID() {
+    public java.lang.Integer getElementID() {
         return elementID;
     }
 
 
-    private void setElementID(Integer elementID) {
+    private void setElementID(java.lang.Integer elementID) {
 
         if (elementID == null || elementID <= 0)
             throw new IllegalArgumentException(String.format(

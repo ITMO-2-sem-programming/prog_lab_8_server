@@ -1,13 +1,35 @@
 package ru.itmo.core.command;
 
 import ru.itmo.core.common.classes.MusicBand;
-import ru.itmo.main.DataBaseManager;
-import ru.itmo.core.common.User;
+import ru.itmo.core.common.exchange.Client;
+import ru.itmo.core.common.exchange.User;
+import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.RemoveByKeyCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.RemoveElementsResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.RemoveOwnedElementsIDServiceResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.exception.InvalidCommandException;
+import ru.itmo.core.exception.StopException;
+import ru.itmo.core.main.DataBaseManager;
+import ru.itmo.core.main.MainMultithreading;
+
 
 import java.sql.Connection;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+
+
 public class RemoveByKeyCommand extends Command {
+
+
+    private MainMultithreading main;
+    private ConcurrentSkipListMap<Integer, MusicBand> collection;
+
+
+    public RemoveByKeyCommand(MainMultithreading main) {
+        setMain(main);
+        setCollection(main.getCollection());
+    }
 
     public static String syntaxDescription =
             "\nCommand: remove_key <key>" +
@@ -16,32 +38,100 @@ public class RemoveByKeyCommand extends Command {
                     "\n   Argument: key (Integer)\n";
 
 
-    public static String execute(ConcurrentSkipListMap<Integer, MusicBand> collection, Connection connection, User user, Integer mbID) {
+    public void execute(RemoveByKeyCommandRequest request) {
 
-        checkCollectionForEmptiness(collection);
+        Connection connection = main.getConnection();
 
-        if ( ! collection.containsKey(mbID)) {
-            return "Error: No element with such 'key' in the collection.";
-        }
+        Integer ID = request.getID();
+        User user = request.getUser();
+        Client client = request.getClient();
 
-        if ( ! DataBaseManager.userOwnsMusicBand(connection, user, mbID)) {
-            return String.format(
-                    "Error: You can't remove MusicBand with key (ID) : '%s' as you don't own it.",
-                    mbID);
+        GeneralResponse generalResponse = null;
 
-        } else {
-            DataBaseManager.removeMusicBandByID(connection, mbID);
-            DataBaseManager.removeOwnedMusicBand(connection, user, mbID);
-            collection.remove(mbID);
+        try {
 
-            return String.format(
-                    "Reply: MusicBand with key (ID) : '%s' was removed successfully.",
-                    mbID);
+            try {
+                checkCollectionForEmptiness(collection);
+            } catch (InvalidCommandException e) {
+                generalResponse = new GeneralResponse(
+                        client,
+                        UserCommandResponseStatus.CANCEL,
+                        e.getMessage());
+                throw new StopException();
+            }
+
+            if ( ! collection.containsKey(ID)) {
+                generalResponse = new GeneralResponse(
+                        client,
+                        UserCommandResponseStatus.CANCEL,
+                        String.format(
+                            "No element with ID = '%s' in the collection.",
+                                ID)
+                );
+                throw new StopException();
+            }
+
+            if ( ! DataBaseManager.userOwnsMusicBand(connection, user, ID)) {
+                generalResponse = new GeneralResponse(
+                        client,
+                        UserCommandResponseStatus.CANCEL,
+                        String.format(
+                            "You can't remove element with ID = '%s' as you don't own it.",
+                        ID)
+                );
+                throw new StopException();
+
+            }
+
+            DataBaseManager.removeMusicBandByID(connection, ID);
+            DataBaseManager.removeOwnedMusicBand(connection, user, ID);
+            collection.remove(ID);
+
+            generalResponse = new GeneralResponse(
+                    client,
+                    UserCommandResponseStatus.OK,
+                    String.format(
+                            "Element with ID = '%s' successfully removed.",
+                            ID)
+            );
+
+        } catch (StopException ignored) {}
+
+        finally {
+
+            main.returnConnection(connection);
+
+            if (generalResponse != null) {
+
+                if ( ! generalResponse.isCancelled()) {
+                    main.addMultidirectionalResponse(new RemoveElementsResponse(ID));
+                    main.addUnidirectionalResponse(new RemoveOwnedElementsIDServiceResponse(client, ID));
+                }
+
+                main.addUnidirectionalResponse(generalResponse);
+
+
+            }
+
         }
     }
 
-    public static String execute(ConcurrentSkipListMap<Integer, MusicBand> collection, Connection connection, User user, String key) {
-        return execute(collection, connection, user, Integer.parseInt(key));
 
+    public void setMain(MainMultithreading main) {
+
+        if (main == null)
+            throw new IllegalArgumentException("Invalid main value : 'null'.");
+
+        this.main = main;
     }
+
+
+    public void setCollection(ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection) {
+
+        if (collection == null)
+            throw new IllegalArgumentException("Invalid collection value : 'null'");
+
+        this.collection = collection;
+    }
+
 }

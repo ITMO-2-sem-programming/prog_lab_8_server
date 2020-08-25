@@ -1,6 +1,6 @@
 package ru.itmo.core.additional;
 
-import ru.itmo.core.common.classes.*;
+import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.connection.*;
 
 import ru.itmo.core.common.exchange.ExchangeType;
@@ -60,7 +60,7 @@ public class Main {
 
 
 
-        ConcurrentSkipListMap<Integer, MusicBand> collection;
+        ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection;
         try {
 
 //            for (int i = 0; i < INITIAL_CAPACITY_OF_CONNECTIONS_LIST; i ++) {
@@ -99,7 +99,7 @@ public class Main {
     }
 
 
-    public static void runCommand(ConcurrentSkipListMap<Integer, MusicBand> collection, ConnectionManager connectionManager, Connection connection) {
+    public static void runCommand(ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection, ConnectionManager connectionManager, Connection connection) {
 
         Request request;
         Response response = new Response();

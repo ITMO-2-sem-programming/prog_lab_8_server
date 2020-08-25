@@ -16,10 +16,10 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class UserCommandHandler {
 
 
-    private ConcurrentSkipListMap<Integer, MusicBand> collection;
+    private ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection;
 
 
-    public UserCommandHandler(ConcurrentSkipListMap<Integer, MusicBand> collection) {
+    public UserCommandHandler(ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection) {
         this.collection = collection;
     }
 

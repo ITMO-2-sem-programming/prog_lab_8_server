@@ -7,22 +7,22 @@ import ru.itmo.core.common.classes.MusicBand;
 public class FilterGreaterThanSinglesCountCommandRequest extends UserCommandRequest {
 
 
-    private Integer singlesCount;
+    private java.lang.Integer singlesCount;
 
 
-    public FilterGreaterThanSinglesCountCommandRequest(Integer singlesCount) {
+    public FilterGreaterThanSinglesCountCommandRequest(java.lang.Integer singlesCount) {
         setSinglesCount(singlesCount);
     }
 
 
 
 
-    public Integer getSinglesCount() {
+    public java.lang.Integer getSinglesCount() {
         return singlesCount;
     }
 
 
-    private void setSinglesCount(Integer singlesCount) {
+    private void setSinglesCount(java.lang.Integer singlesCount) {
 
         if ( ! (singlesCount >= 1))
             throw new IllegalArgumentException(

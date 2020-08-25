@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class MusicBand implements Comparable<MusicBand>, Serializable {
 
 
-    private Integer id;
+    private java.lang.Integer id;
     private String name;
     private Coordinates coordinates;
     private Date creationDate;
@@ -35,7 +35,7 @@ public class MusicBand implements Comparable<MusicBand>, Serializable {
     }
 
 
-    public MusicBand(Integer id,
+    public MusicBand(java.lang.Integer id,
                      String name, //To deal with is field !
                      Coordinates coordinates,
                      long numberOfParticipants,
@@ -81,12 +81,12 @@ public class MusicBand implements Comparable<MusicBand>, Serializable {
     }
 
 
-    public Integer getId() {
+    public java.lang.Integer getId() {
         return id;
     }
 
 
-    public void setId(Integer id) {
+    public void setId(java.lang.Integer id) {
         this.id = id;
     }
 

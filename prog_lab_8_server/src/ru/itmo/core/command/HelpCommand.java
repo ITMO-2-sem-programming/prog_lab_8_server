@@ -1,24 +1,40 @@
 package ru.itmo.core.command;
 
-import ru.itmo.core.common.classes.MusicBand;
+import ru.itmo.core.common.exchange.Client;
+import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.HelpCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.main.MainMultithreading;
 
-import java.util.concurrent.ConcurrentSkipListMap;
+
 
 public class HelpCommand extends Command {
 
+
     public static String syntaxDescription =
-                    "\nCommand: help [command_name]" +
+            "\nCommand: help [command_name]" +
                     "\nDescription: Prints the information about all of the command or the specified one." +
                     "\nNumber of arguments: 0 or 1" +
                     "\n   Optional argument:  command_name (String)\n";
 
 
+    private MainMultithreading main;
 
-    /**
-     * @return
-     */
-    private static String execute() {
-        return HelpCommand.syntaxDescription +
+
+
+
+    public HelpCommand(MainMultithreading main) {
+        setMain(main);
+    }
+
+
+
+
+    private void execute(HelpCommandRequest request) {
+
+        Client client = request.getClient();
+
+        String help =  HelpCommand.syntaxDescription +
                 InfoCommand.syntaxDescription +
                 ShowCommand.syntaxDescription +
                 InsertCommand.syntaxDescription +
@@ -34,62 +50,24 @@ public class HelpCommand extends Command {
                 RemoveAllByGenreCommand.syntaxDescription +
                 MaxByFrontManCommand.syntaxDescription +
                 FilterGreaterThanSinglesCountCommand.syntaxDescription;
+
+
+        GeneralResponse generalResponse = new GeneralResponse(
+                client,
+                UserCommandResponseStatus.CANCEL,
+                help
+        );
+
+        main.addUnidirectionalResponse(generalResponse);
+
     }
 
 
-    /**
-     * @param command
-     * @return
-     */
-    private static String executeConcreteCommand(String command) {
-        switch (command) {
-            case ("help"): return HelpCommand.syntaxDescription;
+    public void setMain(MainMultithreading main) {
 
-            case ("info"): return InfoCommand.syntaxDescription;
+        if (main == null)
+            throw new IllegalArgumentException("Invalid main value : 'null'.");
 
-            case ("show"): return ShowCommand.syntaxDescription;
-
-            case ("insert"): return InsertCommand.syntaxDescription;
-
-            case ("update"): return UpdateCommand.syntaxDescription;
-
-            case ("remove_key"): return RemoveByKeyCommand.syntaxDescription;
-
-            case ("clear"): return ClearCommand.syntaxDescription;
-
-            case ("save"): return SaveCommand.syntaxDescription;
-
-            case ("execute_script"): return ExecuteScriptCommand.syntaxDescription;
-
-            case ("exit"): return ExitCommand.syntaxDescription;
-
-            case ("remove_greater"): return RemoveGreaterCommand.syntaxDescription;
-
-            case ("replace_if_lower"): return ReplaceIfLowerCommand.syntaxDescription;
-
-            case ("remove_lower_key"): return RemoveLowerKeyCommand.syntaxDescription;
-
-            case ("remove_all_by_genre"): return RemoveAllByGenreCommand.syntaxDescription;
-
-            case ("max_by_front_man"): return MaxByFrontManCommand.syntaxDescription;
-
-            case ("filter_greater_than_singles_count"): return FilterGreaterThanSinglesCountCommand.syntaxDescription;
-
-            default: throw new UnsupportedOperationException(String.format("Error: Command %s isn't supported.", command));
-        }
-    }
-
-
-    /**
-     * @param arg
-     * @return
-     */
-    public static String execute(ConcurrentSkipListMap<Integer, MusicBand> collection, String arg) {
-
-        if (arg == null) {
-           return execute();
-        } else {
-            return executeConcreteCommand(arg);
-        }
+        this.main = main;
     }
 }

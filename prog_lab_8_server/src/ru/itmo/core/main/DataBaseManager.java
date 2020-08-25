@@ -1,6 +1,7 @@
 package ru.itmo.core.main;
 
 import ru.itmo.core.common.classes.*;
+import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.connection.PortForwarder;
 import ru.itmo.core.exception.DBException;
@@ -222,10 +223,10 @@ public class DataBaseManager {
     }
 
 
-    public static ConcurrentSkipListMap<Integer, MusicBand> loadCollectionFromDataBase(Connection connection) throws SQLException {
+    public static ConcurrentSkipListMap<java.lang.Integer, MusicBand> loadCollectionFromDataBase(Connection connection) throws SQLException {
 
         try {
-            ConcurrentSkipListMap<Integer, MusicBand> collection = new ConcurrentSkipListMap<>();
+            ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection = new ConcurrentSkipListMap<>();
 
             ResultSet resultSet = connection.prepareStatement("select * from collection").executeQuery();
             MusicBand musicBand;
@@ -343,7 +344,7 @@ public class DataBaseManager {
      * @param user User ID in 'access' table.
      * @return List of owned MusicBands.
      */
-    public static ArrayList<Integer> getOwnedMusicBandsByUser(Connection connection, User user) {
+    public static ArrayList<java.lang.Integer> getOwnedMusicBandsByUser(Connection connection, User user) {
         return getOwnedMusicBandsByUser(connection, DataBaseManager.getUserIDByUserName(connection, user.getLogin()));
     }
 
@@ -354,7 +355,7 @@ public class DataBaseManager {
      * @param userID User ID in 'access' table.
      * @return List of owned MusicBands.
      */
-    public static ArrayList<Integer> getOwnedMusicBandsByUser(Connection connection, int userID) {
+    public static ArrayList<java.lang.Integer> getOwnedMusicBandsByUser(Connection connection, int userID) {
 
         try {
             PreparedStatement ps = connection.prepareStatement(
@@ -370,7 +371,7 @@ public class DataBaseManager {
                         userID));
             }
 
-            ArrayList<Integer> a = new ArrayList<>(Arrays.asList((Integer[]) rs.getArray("owned_elements_ids").getArray()));
+            ArrayList<java.lang.Integer> a = new ArrayList<>(Arrays.asList((java.lang.Integer[]) rs.getArray("owned_elements_ids").getArray()));
 
             if (a == null) {
                 return new ArrayList<>(0); //The user doesn't own any MusicBands.
@@ -594,14 +595,14 @@ public class DataBaseManager {
 
     public static void removeOwnedMusicBand(Connection connection, int userID, int musicBandID) {
         try {
-            ArrayList<Integer> arrayList = getOwnedMusicBandsByUser(connection, userID);
+            ArrayList<java.lang.Integer> arrayList = getOwnedMusicBandsByUser(connection, userID);
             arrayList.remove(arrayList.indexOf(musicBandID));
 
             PreparedStatement ps = connection.prepareStatement(
                     "update access set owned_elements_ids =  ? where user_id = ?"
             );
 
-            ps.setArray(1, connection.createArrayOf("integer", arrayList.toArray(new Integer[0])));
+            ps.setArray(1, connection.createArrayOf("integer", arrayList.toArray(new java.lang.Integer[0])));
             ps.setInt(2, userID);
 
             ps.execute();

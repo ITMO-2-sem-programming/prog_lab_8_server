@@ -2,6 +2,8 @@ package ru.itmo.core.common.exchange.response.serverResponse.unidirectional.sevi
 
 
 
+import ru.itmo.core.common.exchange.Client;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,12 +15,14 @@ public class RemoveOwnedElementsIDServiceResponse extends BackgroundServiceRespo
 
 
 
-    public RemoveOwnedElementsIDServiceResponse(List<Integer> ownedElementsID) {
+    public RemoveOwnedElementsIDServiceResponse(Client client, List<Integer> ownedElementsID) {
+        super(client);
         setOwnedElementsID(ownedElementsID);
     }
 
 
-    public RemoveOwnedElementsIDServiceResponse(Integer... ownedElementsID) {
+    public RemoveOwnedElementsIDServiceResponse(Client client, Integer... ownedElementsID) {
+        super(client);
         setOwnedElementsID(Arrays.asList(ownedElementsID));
     }
 

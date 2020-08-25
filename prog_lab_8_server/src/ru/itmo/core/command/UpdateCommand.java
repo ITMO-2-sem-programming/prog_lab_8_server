@@ -1,10 +1,13 @@
 package ru.itmo.core.command;
 
 import ru.itmo.core.common.classes.MusicBand;
+import ru.itmo.core.common.exchange.Client;
+import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.UpdateCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.UpdateElementResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.DataBaseManager;
 import ru.itmo.core.main.MainMultithreading;
@@ -14,14 +17,17 @@ import ru.itmo.core.exception.InvalidCommandException;
 import java.sql.Connection;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+
+
 public class UpdateCommand extends Command {
+
 
     private MainMultithreading main;
     private ConcurrentSkipListMap<Integer, MusicBand> collection;
 
-    public UpdateCommand(MainMultithreading main, ConcurrentSkipListMap<Integer, MusicBand> collection) {
+    public UpdateCommand(MainMultithreading main) {
         setMain(main);
-        setCollection(collection);
+        setCollection(main.getCollection());
     }
 
     public static String syntaxDescription =
@@ -33,19 +39,26 @@ public class UpdateCommand extends Command {
 
 
 
-    public void execute(UpdateCommandRequest updateCommandRequest, Connection connection) {
+    public void execute(UpdateCommandRequest request) {
 
-        Integer ID = updateCommandRequest.getID();;
+        Connection connection = main.getConnection();
+
+        Integer ID = request.getID();
+        MusicBand element = request.getElement();
+        User user = request.getUser();
+        Client client = request.getClient();
 
         GeneralResponse generalResponse = null;
 
+asdasd catch DBException todo
         try {
 
             try {
                 checkCollectionForEmptiness(collection);
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
-                        UserCommandResponseStatus.ERROR,
+                        client,
+                        UserCommandResponseStatus.CANCEL,
                         e.getMessage());
                 throw new StopException();
             }
@@ -53,15 +66,17 @@ public class UpdateCommand extends Command {
 
             if ( ! collection.containsKey(ID)) {
                 generalResponse = new GeneralResponse(
-                        UserCommandResponseStatus.ERROR,
+                        client,
+                        UserCommandResponseStatus.CANCEL,
                         "No element with such 'ID' in the collection.");
                 throw new StopException();
             }
 
 
-            if ( ! DataBaseManager.userOwnsMusicBand(connection, updateCommandRequest.getUser(), ID)) {
+            if ( ! DataBaseManager.userOwnsMusicBand(connection, user, ID)) {
                 generalResponse = new GeneralResponse(
-                        UserCommandResponseStatus.ERROR,
+                        client,
+                        UserCommandResponseStatus.CANCEL,
                         String.format(
                                 "You can't update element with ID = '%s' as you don't own it.",
                                 ID)
@@ -70,10 +85,11 @@ public class UpdateCommand extends Command {
             }
 
 
-            DataBaseManager.updateMusicBandByID(connection, updateCommandRequest.getElement(), ID);
-            collection.put(ID, updateCommandRequest.getElement());
+            DataBaseManager.updateMusicBandByID(connection, element, ID);
+            collection.put(ID, element);
 
             generalResponse = new GeneralResponse(
+                    client,
                     UserCommandResponseStatus.OK,
                     String.format(
                             "Element with ID = '%s' successfully updated.",
@@ -83,15 +99,13 @@ public class UpdateCommand extends Command {
         } catch (StopException ignored) {}
 
         finally {
+
+            main.returnConnection(connection);
+
             if (generalResponse != null) {
 
-                generalResponse.setClient(updateCommandRequest.getClient());
-
-                if ( ! generalResponse.anErrorOccurred()) {
-                    main.addMultidirectionalResponse(new UpdateElementResponse(
-                            ID,
-                            updateCommandRequest.getElement())
-                    );
+                if ( ! generalResponse.isCancelled()) {
+                    main.addMultidirectionalResponse(new UpdateElementResponse(ID, element));
                 }
 
                 main.addUnidirectionalResponse(generalResponse);
@@ -99,8 +113,10 @@ public class UpdateCommand extends Command {
 
             }
         }
-    }
 
+
+
+    }
 
 
     public void setMain(MainMultithreading main) {
@@ -112,7 +128,7 @@ public class UpdateCommand extends Command {
     }
 
 
-    public void setCollection(ConcurrentSkipListMap<Integer, MusicBand> collection) {
+    public void setCollection(ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection) {
 
         if (collection == null)
             throw new IllegalArgumentException("Invalid collection value : 'null'");

@@ -4,5 +4,5 @@ package ru.itmo.core.common.exchange.response.serverResponse.unidirectional.user
 
 public enum UserCommandResponseStatus {
     OK,
-    ERROR;
+    CANCEL;
 }

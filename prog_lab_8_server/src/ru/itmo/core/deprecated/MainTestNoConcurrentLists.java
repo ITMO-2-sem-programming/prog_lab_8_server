@@ -44,7 +44,7 @@ public class MainTestNoConcurrentLists {
         responsesList = new LinkedList<>();
 
         isRunning = true;
-        ConcurrentSkipListMap<Integer, MusicBand> collection;
+        ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection;
 
         try {
 
@@ -66,7 +66,7 @@ public class MainTestNoConcurrentLists {
     }
 
 
-    public static void runCommand(ConcurrentSkipListMap<Integer, MusicBand> collection, ConnectionManager connectionManager, Connection connection) throws IOException, ClassNotFoundException {
+    public static void runCommand(ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection, ConnectionManager connectionManager, Connection connection) throws IOException, ClassNotFoundException {
 
 
 //        ForkJoinPool makeResponsePool = new ForkJoinPool();

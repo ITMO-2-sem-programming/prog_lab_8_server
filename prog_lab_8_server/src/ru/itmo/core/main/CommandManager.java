@@ -16,7 +16,7 @@ public class CommandManager {
     static String dateOfInitialization;
 
 
-    public static CommandResponse executeCommand(ConcurrentSkipListMap<Integer, MusicBand> collection, Connection connection, CommandRequest commandRequest) {
+    public static CommandResponse executeCommand(ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection, Connection connection, CommandRequest commandRequest) {
 
         CommandResponse commandResponse = new CommandResponse();
 
@@ -94,7 +94,7 @@ public class CommandManager {
 
 
                 case ("filter_greater_than_singles_count"):
-                    commandResponse.setMessage(FilterGreaterThanSinglesCountCommand.execute(collection, Integer.parseInt(argumentKey)));
+                    commandResponse.setMessage(FilterGreaterThanSinglesCountCommand.execute(collection, java.lang.Integer.parseInt(argumentKey)));
                     break;
 
 

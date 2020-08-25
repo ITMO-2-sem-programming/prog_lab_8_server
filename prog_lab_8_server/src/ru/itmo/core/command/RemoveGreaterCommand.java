@@ -1,15 +1,36 @@
 package ru.itmo.core.command;
 
 import ru.itmo.core.common.classes.MusicBand;
-import ru.itmo.main.DataBaseManager;
-import ru.itmo.core.common.User;
+import ru.itmo.core.common.exchange.Client;
+import ru.itmo.core.common.exchange.User;
+import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.RemoveGreaterCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.RemoveElementsResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.RemoveOwnedElementsIDServiceResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UserCommandResponseStatus;
+import ru.itmo.core.exception.InvalidCommandException;
+import ru.itmo.core.exception.StopException;
+import ru.itmo.core.main.DataBaseManager;
+import ru.itmo.core.main.MainMultithreading;
+
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 
+
 public class RemoveGreaterCommand extends Command {
+
+
+    private MainMultithreading main;
+    private ConcurrentSkipListMap<Integer, MusicBand> collection;
+
+    public RemoveGreaterCommand(MainMultithreading main) {
+        setMain(main);
+        setCollection(main.getCollection());
+    }
+
 
     public static String syntaxDescription =
                     "\nCommand: remove_greater {element}" +
@@ -18,28 +39,101 @@ public class RemoveGreaterCommand extends Command {
                     "\n   Argument: element (MusicBand)\n";
 
 
-    public static String execute(ConcurrentSkipListMap<Integer, MusicBand> collection, Connection connection, User user, MusicBand musicBand) {
+    public  void execute(RemoveGreaterCommandRequest request) {
 
-        checkCollectionForEmptiness(collection);
+        Connection connection = main.getConnection();
 
-        ArrayList<Integer> ownedMusicBandsByUser = DataBaseManager.getOwnedMusicBandsByUser(connection, user);
-//        ArrayList<Integer> musicBandsIDsToRemove = new ArrayList<>();
+        MusicBand element = request.getElement();
+        User user = request.getUser();
+        Client client = request.getClient();
 
-        collection.values().forEach(mb -> {
-                    if (mb.isMoreThan(musicBand)
-                            & ownedMusicBandsByUser.contains(mb.getId())) {
-                        DataBaseManager.removeMusicBand(connection, mb);
-                        DataBaseManager.removeOwnedMusicBand(connection, user, mb.getId());
-                        collection.remove(mb.getId());
-//                        musicBandsIDsToRemove.add(mb.getId());
+        GeneralResponse generalResponse = null;
 
-                    }
-                });
+        ArrayList<Integer> musicBandsIDToRemove = new ArrayList<>();
 
-//        musicBandsIDsToRemove.forEach(collection::remove);
 
-        return "Reply: MusicBand greater than the specified were successfully removed if presented.";
+        try {
 
+            try {
+                checkCollectionForEmptiness(collection);
+            } catch (InvalidCommandException e) {
+                generalResponse = new GeneralResponse(
+                        client,
+                        UserCommandResponseStatus.CANCEL,
+                        e.getMessage()
+                );
+                throw  new StopException();
+            }
+
+            ArrayList<Integer> ownedMusicBandsByUser = DataBaseManager.getOwnedMusicBandsByUser(connection, user);
+
+            collection.values().forEach(mb -> {
+                if (
+                        mb.isMoreThan(element)
+                        & ownedMusicBandsByUser.contains(mb.getId())) {
+                    DataBaseManager.removeMusicBand(connection, mb);
+                    DataBaseManager.removeOwnedMusicBand(connection, user, mb.getId());
+                    collection.remove(mb.getId());
+
+                    musicBandsIDToRemove.add(mb.getId());
+
+                }
+            });
+
+            if ( musicBandsIDToRemove.isEmpty() ) {
+                generalResponse = new GeneralResponse(
+                        client,
+                        UserCommandResponseStatus.CANCEL,
+                        "No elements were removed."
+                );
+
+            } else {
+                generalResponse = new GeneralResponse(
+                        client,
+                        UserCommandResponseStatus.OK,
+                        String.format(
+                                "Elements with IDs = '%s' successfully removed.",
+                                musicBandsIDToRemove)
+                );
+            }
+
+
+        } catch (StopException ignored) {}
+
+        finally {
+
+            main.returnConnection(connection);
+
+            if (generalResponse != null) {
+
+                if ( ! generalResponse.isCancelled() ) {
+                    main.addMultidirectionalResponse(new RemoveElementsResponse(musicBandsIDToRemove));
+                    main.addUnidirectionalResponse(new RemoveOwnedElementsIDServiceResponse(client, musicBandsIDToRemove));
+                }
+
+                main.addUnidirectionalResponse(generalResponse);
+            }
+        }
     }
+
+
+    public void setMain(MainMultithreading main) {
+
+        if (main == null)
+            throw new IllegalArgumentException("Invalid main value : 'null'.");
+
+        this.main = main;
+    }
+
+
+    public void setCollection(ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection) {
+
+        if (collection == null)
+            throw new IllegalArgumentException("Invalid collection value : 'null'");
+
+        this.collection = collection;
+    }
+
+
 
 }

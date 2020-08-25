@@ -1,6 +1,8 @@
 package ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse;
 
 
+import ru.itmo.core.common.exchange.Client;
+
 public class GeneralResponse extends UserCommandResponse {
 
 
@@ -14,13 +16,15 @@ public class GeneralResponse extends UserCommandResponse {
 
 
 
-    public GeneralResponse(UserCommandResponseStatus userCommandStatus, String userCommandMessage) {
+    public GeneralResponse(Client client, UserCommandResponseStatus userCommandStatus, String userCommandMessage) {
+        super(client);
         this.userCommandResponseStatus = userCommandStatus;
         this.userCommandMessage = userCommandMessage;
     }
 
 
-    public GeneralResponse(UserCommandResponseStatus userCommandResponseStatus, String userCommandMessage, ServerProcessStatus serverProcessStatus, String serverProcessMessage) {
+    public GeneralResponse(Client client, UserCommandResponseStatus userCommandResponseStatus, String userCommandMessage, ServerProcessStatus serverProcessStatus, String serverProcessMessage) {
+        super(client);
         this.userCommandResponseStatus = userCommandResponseStatus;
         this.userCommandMessage = userCommandMessage;
         this.serverProcessStatus = serverProcessStatus;
@@ -30,10 +34,10 @@ public class GeneralResponse extends UserCommandResponse {
 
 
 
-    public boolean anErrorOccurred() {
+    public boolean isCancelled() {
 
         return
-                userCommandResponseStatus.equals(UserCommandResponseStatus.ERROR)
+                userCommandResponseStatus.equals(UserCommandResponseStatus.CANCEL)
                 || serverProcessStatus.equals(ServerProcessStatus.ERROR);
 
     }
