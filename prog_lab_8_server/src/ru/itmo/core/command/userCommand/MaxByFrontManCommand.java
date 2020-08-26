@@ -1,12 +1,12 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.classes.Person;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.MaxByFrontManCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.MainMultithreading;
@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 
 
-public class MaxByFrontManCommand extends Command{
+public class MaxByFrontManCommand extends UserCommand {
 
 
 
@@ -52,7 +52,7 @@ public class MaxByFrontManCommand extends Command{
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.ERROR,
+                        CRStatus.ERROR,
                         e.getMessage()
                 );
                 throw  new StopException();
@@ -64,7 +64,7 @@ public class MaxByFrontManCommand extends Command{
 
             generalResponse = new GeneralResponse(
                     client,
-                    UCStatus.OK,
+                    CRStatus.OK,
                     greatestFrontMan
             );
 

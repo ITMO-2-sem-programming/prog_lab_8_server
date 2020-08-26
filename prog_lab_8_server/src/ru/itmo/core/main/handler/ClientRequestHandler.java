@@ -1,7 +1,6 @@
 package ru.itmo.core.main.handler;
 
 import ru.itmo.core.common.exchange.request.ClientRequest;
-import ru.itmo.core.common.exchange.request.Request;
 import ru.itmo.core.common.exchange.request.clientRequest.serviceRequest.ServiceRequest;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.UserCommandRequest;
 import ru.itmo.core.main.MainMultithreading;
@@ -10,15 +9,27 @@ import ru.itmo.core.main.MainMultithreading;
 public class ClientRequestHandler {
 
 
-    MainMultithreading main;
+    ServiceCommandHandler scHandler;
+    UserCommandHandler ucHandler;
 
-    public void handle(Request request) {
 
-        if (request.getClientRequest() instanceof UserCommandRequest) {
+    public ClientRequestHandler(MainMultithreading main) {
 
-        } else if (request.getClientRequest() instanceof ServiceRequest) {
-
-        }
+        ucHandler = new UserCommandHandler(main);
+        scHandler = new ServiceCommandHandler(main);
 
     }
+
+
+    public void handle(ClientRequest clientRequest) {
+
+        if (clientRequest instanceof UserCommandRequest) {
+            ucHandler.handle((UserCommandRequest) clientRequest);
+        } else if (clientRequest instanceof ServiceRequest) {
+            scHandler.handle((ServiceRequest) clientRequest);
+        }
+    }
+
+
+
 }

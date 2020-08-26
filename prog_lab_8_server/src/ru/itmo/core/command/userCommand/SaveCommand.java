@@ -1,8 +1,8 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import java.io.IOException;
 
-public class SaveCommand extends Command{
+public class SaveCommand extends UserCommand {
 
     public static String syntaxDescription =
                     "\nCommand: save [file_path]" +

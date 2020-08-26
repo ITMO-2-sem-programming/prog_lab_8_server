@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class MusicBand implements Comparable<MusicBand>, Serializable {
 
 
-    private java.lang.Integer id;
+    private Integer id;
     private String name;
     private Coordinates coordinates;
     private Date creationDate;

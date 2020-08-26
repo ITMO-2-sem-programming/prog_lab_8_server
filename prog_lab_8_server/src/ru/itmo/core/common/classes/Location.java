@@ -4,13 +4,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 public class Location implements Serializable {
-    private MusicBand x;
+    private Integer x;
     private int y;
     private String name;
 
     public static HashMap<String, String> locationFieldsDescription;
 
-    public Location(MusicBand x, int y, String name) {
+    public Location(Integer x, int y, String name) {
         this.setX(x);
         this.setY(y);
         this.setName(name);
@@ -35,12 +35,12 @@ public class Location implements Serializable {
                 "        }";
     }
 
-    public MusicBand getX() {
+    public Integer getX() {
         return x;
     }
 
 
-    public void setX(MusicBand x) {
+    public void setX(Integer x) {
         if (x == null) throw new IllegalArgumentException(locationFieldsDescription.get("x"));
         this.x = x;
     }

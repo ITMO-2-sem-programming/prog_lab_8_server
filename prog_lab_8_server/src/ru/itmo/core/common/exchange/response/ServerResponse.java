@@ -20,7 +20,7 @@ public abstract class ServerResponse implements Serializable {
         return client;
     }
 
-    private void setClient(Client client) {
+    public void setClient(Client client) {
 
 //        if (client == null)
 //            throw new IllegalArgumentException("Invalid client value : 'null'.");

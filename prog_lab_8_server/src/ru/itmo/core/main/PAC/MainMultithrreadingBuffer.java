@@ -1,5 +1,4 @@
-package ru.itmo.core.main;
-
+package ru.itmo.core.main.PAC;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
@@ -8,6 +7,8 @@ import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.Mul
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.UnidirectionalResponse;
 import ru.itmo.core.connection.ConnectionManager;
 import ru.itmo.core.connection.PortForwarder;
+import ru.itmo.core.main.DataBaseManager;
+import ru.itmo.core.main.MainMultithreading;
 import ru.itmo.core.main.handler.ClientRequestHandler;
 
 import java.io.IOException;
@@ -15,16 +16,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.*;
 
-
-/**
- * Runs the server in multithreading mode.
- */
-
-// TODO: 24.08.2020 Пусть команды сами берут новый Connection из Main + инициализация коллекции
-//  collection = main.getCollection() в конструкторе каждой команды, кой эо нужно
-
-public class MainMultithreading {
-
+public class MainMultithrreadingBuffer {
 
     int serverPort = 44321;
 
@@ -106,7 +98,8 @@ public class MainMultithreading {
         ExecutorService sendMultidirectionalResponsePool = Executors.newFixedThreadPool(sendResponsePoolCapacity);
 
 
-        ClientRequestHandler requestHandler = new ClientRequestHandler(this);
+        ClientRequestHandler requestHandler = new ClientRequestHandler(new MainMultithreading());//
+        /////**********************************88 // TODO: 26.08.2020  
 
 
         Runnable sendUnidirectionalResponseTask = () -> {
@@ -151,39 +144,12 @@ public class MainMultithreading {
             System.out.println("Got a request from requests queue.");
             requestHandler.handle(requestToProcess);
 
-//                sendUnidirectionalResponsePool.submit(sendUnidirectionalResponseTask);
-
-            UnidirectionalResponse unidirectionalResponse = unidirectionalResponsesQueue.poll();
-
-            if (unidirectionalResponse == null) return;
-
-            try {
-                connectionManagerSender.sendResponse(unidirectionalResponse);
-
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-
-
-//                sendMultidirectionalResponsePool.submit(sendMultidirectionalResponseTask);
-
-            MultidirectionalResponse multidirectionalResponse = multidirectionalResponsesQueue.poll();
-
-            if (multidirectionalResponse == null) return;
-
-            try {
-                for (Client client : clients) {
-                    multidirectionalResponse.setClient(client);
-                    connectionManagerSender.sendResponse(multidirectionalResponse);
-                }
-
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
+            sendUnidirectionalResponsePool.submit(sendUnidirectionalResponseTask);
+            sendMultidirectionalResponsePool.submit(sendMultidirectionalResponseTask);
 
         };
 
-// --------------------------------------  ----
+
         Runnable receiveRequestTask = () -> {
 
             ClientRequest newRequest;
@@ -200,43 +166,7 @@ public class MainMultithreading {
 
                     requestsQueue.add(newRequest);
 
-//                        makeResponsePool.submit(makeResponseTask);
-
-                    ClientRequest requestToProcess = requestsQueue.poll();
-
-                    System.out.println("Got a request from requests queue.");
-                    requestHandler.handle(requestToProcess);
-
-                    UnidirectionalResponse unidirectionalResponse = unidirectionalResponsesQueue.poll();
-
-                    if (unidirectionalResponse == null) return;
-
-                    try {
-                        connectionManagerSender.sendResponse(unidirectionalResponse);
-
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                    }
-
-
-//                sendMultidirectionalResponsePool.submit(sendMultidirectionalResponseTask);
-
-                    MultidirectionalResponse multidirectionalResponse = multidirectionalResponsesQueue.poll();
-
-                    if ( multidirectionalResponse != null) {
-
-                        try {
-                            for (Client client : clients) {
-                                multidirectionalResponse.setClient(client);
-                                connectionManagerSender.sendResponse(multidirectionalResponse);
-                            }
-
-                        } catch (IOException e) {
-                            System.out.println(e.getMessage());
-                        }
-                    }
-
-
+                    makeResponsePool.submit(makeResponseTask);
 
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();

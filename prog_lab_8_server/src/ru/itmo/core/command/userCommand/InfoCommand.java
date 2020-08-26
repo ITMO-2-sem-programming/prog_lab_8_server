@@ -1,15 +1,15 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.InfoCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.main.MainMultithreading;
 
 import java.util.concurrent.ConcurrentSkipListMap;
 
-public class InfoCommand extends Command {
+public class InfoCommand extends UserCommand {
 
 
     private MainMultithreading main;
@@ -42,7 +42,7 @@ public class InfoCommand extends Command {
 
         GeneralResponse generalResponse = new GeneralResponse(
                 client,
-                UCStatus.OK,
+                CRStatus.OK,
                 info
         );
 

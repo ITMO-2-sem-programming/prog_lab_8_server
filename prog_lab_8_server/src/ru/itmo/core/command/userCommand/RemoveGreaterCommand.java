@@ -1,13 +1,13 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.RemoveGreaterCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.RemoveElementsResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.RemoveOwnedElementsIDServiceResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 
 
-public class RemoveGreaterCommand extends Command {
+public class RemoveGreaterCommand extends UserCommand {
 
 
     private MainMultithreading main;
@@ -62,7 +62,7 @@ public class RemoveGreaterCommand extends Command {
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.ERROR,
+                        CRStatus.ERROR,
                         e.getMessage()
                 );
                 throw  new StopException();
@@ -86,7 +86,7 @@ public class RemoveGreaterCommand extends Command {
             if ( musicBandsIDToRemove.isEmpty() ) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.NEUTRAL,
+                        CRStatus.NEUTRAL,
                         "No elements were removed."
                 );
 
@@ -94,7 +94,7 @@ public class RemoveGreaterCommand extends Command {
                 collectionChanged = true;
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.OK,
+                        CRStatus.OK,
                         String.format(
                                 "Elements with IDs = '%s' successfully removed.",
                                 musicBandsIDToRemove)
@@ -106,7 +106,7 @@ public class RemoveGreaterCommand extends Command {
         } catch (DBException e) {
             generalResponse = new GeneralResponse(
                     client,
-                    UCStatus.ERROR,
+                    CRStatus.ERROR,
                     e.getMessage());
         } finally {
 
@@ -116,7 +116,10 @@ public class RemoveGreaterCommand extends Command {
 
                 if ( collectionChanged ) {
                     main.addMultidirectionalResponse(new RemoveElementsResponse(musicBandsIDToRemove));
-                    main.addUnidirectionalResponse(new RemoveOwnedElementsIDServiceResponse(client, musicBandsIDToRemove));
+                    main.addUnidirectionalResponse(new RemoveOwnedElementsIDServiceResponse(
+                            client,
+                            CRStatus.OK,
+                            musicBandsIDToRemove));
                 }
 
                 main.addUnidirectionalResponse(generalResponse);

@@ -1,6 +1,7 @@
 package ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse;
 
 import ru.itmo.core.common.exchange.Client;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 
 public class RegisterUserServiceResponse extends ServiceResponse {
 
@@ -10,16 +11,15 @@ public class RegisterUserServiceResponse extends ServiceResponse {
 
 
 
-    public RegisterUserServiceResponse(Client client, boolean registered) {
-        super(client);
+    public RegisterUserServiceResponse(Client client, CRStatus status, String message, boolean registered) {
+        super(client, status, message);
         this.registered = registered;
     }
 
 
-    public RegisterUserServiceResponse(Client client, boolean registered, String message) {
-        super(client);
+    public RegisterUserServiceResponse(Client client, CRStatus status, boolean registered) {
+        super(client, status, null);
         this.registered = registered;
-        this.message = message;
     }
 
 

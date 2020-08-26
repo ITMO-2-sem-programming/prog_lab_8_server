@@ -2,11 +2,12 @@ package ru.itmo.core.common.exchange.response.serverResponse.unidirectional.sevi
 
 
 import ru.itmo.core.common.exchange.Client;
-import ru.itmo.core.common.exchange.request.clientRequest.serviceRequest.ServiceRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.ServiceResponse;
 
 public abstract class BackgroundServiceResponse extends ServiceResponse {
-    public BackgroundServiceResponse(Client client) {
-        super(client);
+
+    public BackgroundServiceResponse(Client client, CRStatus status, String message) {
+        super(client, status, message);
     }
 }

@@ -1,55 +1,56 @@
 package ru.itmo.core.common.exchange;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 
 
 
-public class Client {
+public class Client implements Serializable {
 
 
-    private InetAddress clientAddress;
-    private int clientPort;
+    private InetAddress address;
+    private int port;
 
 
 
-    public Client(InetAddress clientAddress, int clientPort) {
-        setClientAddress(clientAddress);
-        setClientPort(clientPort);
+    public Client(InetAddress address, int port) {
+        setAddress(address);
+        setPort(port);
     }
 
 
 
 
-    public InetAddress getClientAddress() {
-        return clientAddress;
+    public InetAddress getAddress() {
+        return address;
     }
 
 
-    private void setClientAddress(InetAddress clientAddress) {
+    private void setAddress(InetAddress address) {
 
-        if (clientAddress == null)
+        if (address == null)
             throw new IllegalArgumentException(
                     "Invalid client inet address : 'null'."
             );
 
-        this.clientAddress = clientAddress;
+        this.address = address;
     }
 
 
-    public int getClientPort() {
-        return clientPort;
+    public int getPort() {
+        return port;
     }
 
 
-    private void setClientPort(int clientPort) {
+    private void setPort(int port) {
 
-        if (clientPort < 0)
+        if (port < 0)
             throw new IllegalArgumentException(String.format(
                     "Invalid client post : '%s'.",
-                    clientPort)
+                    port)
             );
 
-        this.clientPort = clientPort;
+        this.port = port;
     }
 
 

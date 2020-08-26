@@ -1,49 +1,49 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.User;
-import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.ReplaceIfLowerCommandRequest;
+import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.UpdateCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.UpdateElementResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.DBException;
-import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.DataBaseManager;
 import ru.itmo.core.main.MainMultithreading;
+import ru.itmo.core.exception.InvalidCommandException;
 
 
 import java.sql.Connection;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 
-public class ReplaceIfLowerCommand extends Command {
+
+public class UpdateCommand extends UserCommand {
 
 
     private MainMultithreading main;
-    private ConcurrentSkipListMap<java.lang.Integer, MusicBand> collection;
+    private ConcurrentSkipListMap<Integer, MusicBand> collection;
 
-
-    public static String syntaxDescription =
-            "\nCommand: replace_if_lower <key> {element}" +
-                    "\nDescription: Replaces the element of specified key with the specified element if the new one is less." +
-                    "\nNumber of arguments 2: " +
-                    "\n   First argument:  key     (Integer)" +
-                    "\n   Second argument: element (MusicBand)\n";
-
-
-    public ReplaceIfLowerCommand(MainMultithreading main) {
+    public UpdateCommand(MainMultithreading main) {
         setMain(main);
         setCollection(main.getCollection());
     }
 
+    public static String syntaxDescription =
+            "\nCommand: update <id> {element}" +
+                    "\nDescription: Updates value of the element with following 'ID'." +
+                    "\nNumber of arguments: 2" +
+                    "\n   First argument:  id      (Integer)" +
+                    "\n   Second argument: element (MusicBand)\n";
 
-    public void execute(ReplaceIfLowerCommandRequest request) {
+
+
+    public void execute(UpdateCommandRequest request) {
 
         Connection connection = main.getConnection();
 
-        java.lang.Integer ID = request.getID();
+        Integer ID = request.getID();
         MusicBand element = request.getElement();
         User user = request.getUser();
         Client client = request.getClient();
@@ -59,46 +59,30 @@ public class ReplaceIfLowerCommand extends Command {
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.ERROR,
+                        CRStatus.ERROR,
                         e.getMessage());
                 throw new StopException();
             }
 
+
             if ( ! collection.containsKey(ID)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.ERROR,
-                        String.format(
-                                "No element with ID = '%s' in the collection.",
-                                ID)
-                );
+                        CRStatus.ERROR,
+                        "No element with such 'ID' in the collection.");
                 throw new StopException();
             }
 
-            if ( ! DataBaseManager.userOwnsMusicBand(connection, user, element)) {
+
+            if ( ! DataBaseManager.userOwnsMusicBand(connection, user, ID)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.ERROR,
+                        CRStatus.ERROR,
                         String.format(
-                                "You can't replace element with ID = '%s' as you don't own it.",
+                                "You can't update element with ID = '%s' as you don't own it.",
                                 ID)
                 );
                 throw new StopException();
-
-            }
-
-            if ( ! request.getElement().isLessThan(collection.get(ID))) {
-
-
-                generalResponse = new GeneralResponse(
-                        client,
-                        UCStatus.NEUTRAL,
-                        String.format(
-                                "Element wasn't replaced as the new one is not lower than the element with ID = '%s'.",
-                                ID)
-                );
-                throw new StopException();
-
             }
 
 
@@ -109,33 +93,38 @@ public class ReplaceIfLowerCommand extends Command {
 
             generalResponse = new GeneralResponse(
                     client,
-                    UCStatus.OK,
+                    CRStatus.OK,
                     String.format(
-                            "Element with ID = '%s' was successfully replaced.",
+                            "Element with ID = '%s' successfully updated.",
                             ID)
             );
 
         } catch (StopException ignored) {
-
         } catch (DBException e) {
             generalResponse = new GeneralResponse(
                     client,
-                    UCStatus.ERROR,
+                    CRStatus.ERROR,
                     e.getMessage());
-        } finally {
+        }
+
+
+        finally {
 
             main.returnConnection(connection);
 
             if (generalResponse != null) {
-
 
                 if ( collectionChanged ) {
                     main.addMultidirectionalResponse(new UpdateElementResponse(ID, element));
                 }
 
                 main.addUnidirectionalResponse(generalResponse);
+
+
             }
         }
+
+
 
     }
 
@@ -156,7 +145,4 @@ public class ReplaceIfLowerCommand extends Command {
 
         this.collection = collection;
     }
-
-
-
 }

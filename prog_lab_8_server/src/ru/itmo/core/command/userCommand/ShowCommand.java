@@ -1,17 +1,17 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.ShowCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.main.MainMultithreading;
 
 import java.util.concurrent.ConcurrentSkipListMap;
 
 
 
-public class ShowCommand extends Command {
+public class ShowCommand extends UserCommand {
 
 
     private MainMultithreading main;
@@ -31,13 +31,13 @@ public class ShowCommand extends Command {
     }
 
 
-    private void execute(ShowCommandRequest request) {
+    public void execute(ShowCommandRequest request) {
 
         Client client = request.getClient();
 
         GeneralResponse generalResponse = new GeneralResponse(
                 client,
-                UCStatus.OK,
+                CRStatus.OK,
                 collection.toString());
 
         main.addUnidirectionalResponse(generalResponse);

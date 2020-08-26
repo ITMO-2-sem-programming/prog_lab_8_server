@@ -1,7 +1,7 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 
-public class ExecuteScriptCommand extends Command {
+public class ExecuteScriptCommand extends UserCommand {
 
     public static String syntaxDescription =
                     "\nCommand: execute_script <file_path>" +

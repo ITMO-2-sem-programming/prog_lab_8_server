@@ -2,6 +2,7 @@ package ru.itmo.core.common.exchange.response.serverResponse.unidirectional.sevi
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,31 +12,44 @@ import java.util.List;
 public class LoadOwnedElementsIDServiceResponse extends BackgroundServiceResponse {
 
 
-    List<MusicBand> ownedElements;
+    List<Integer> ownedElementsID;
 
 
 
 
-    public LoadOwnedElementsIDServiceResponse(Client client, List<MusicBand> ownedElements) {
-        super(client);
-        setOwnedElements(ownedElements);
-    }
-
-    public LoadOwnedElementsIDServiceResponse(Client client, MusicBand... ownedElements) {
-        super(client);
-        setOwnedElements(Arrays.asList(ownedElements));
+    public LoadOwnedElementsIDServiceResponse(Client client, CRStatus status, String message, List<Integer> ownedElementsID) {
+        super(client, status, message);
+        setOwnedElementsID(ownedElementsID);
     }
 
 
-
-
-    public List<MusicBand> getOwnedElements() {
-        return ownedElements;
+    public LoadOwnedElementsIDServiceResponse(Client client, CRStatus status, List<Integer> ownedElementsID) {
+        super(client, status, null);
+        setOwnedElementsID(ownedElementsID);
     }
 
-    private void setOwnedElements(List<MusicBand> ownedElements) {
-        if (ownedElements == null)
-            throw new IllegalArgumentException("Invalid ownedElements value : 'null'.");
-        this.ownedElements = ownedElements;
+
+    public LoadOwnedElementsIDServiceResponse(Client client, CRStatus status, String message, Integer... ownedElementsID) {
+        super(client, status, message);
+        setOwnedElementsID(Arrays.asList(ownedElementsID));
+    }
+
+
+    public LoadOwnedElementsIDServiceResponse(Client client, CRStatus status, Integer... ownedElementsID) {
+        super(client, status, null);
+        setOwnedElementsID(Arrays.asList(ownedElementsID));
+    }
+
+
+
+
+    public List<Integer> getOwnedElementsID() {
+        return ownedElementsID;
+    }
+
+    private void setOwnedElementsID(List<Integer> ownedElementsID) {
+        if (ownedElementsID == null)
+            throw new IllegalArgumentException("Invalid ownedElementsID value : 'null'.");
+        this.ownedElementsID = ownedElementsID;
     }
 }

@@ -1,21 +1,20 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.FilterGreaterThanSinglesCountCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.MainMultithreading;
 
-import java.sql.Connection;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
 
 
-public class FilterGreaterThanSinglesCountCommand extends Command {
+public class FilterGreaterThanSinglesCountCommand extends UserCommand {
 
 
     public static String syntaxDescription =
@@ -54,7 +53,7 @@ public class FilterGreaterThanSinglesCountCommand extends Command {
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.ERROR,
+                        CRStatus.ERROR,
                         e.getMessage()
                 );
                 throw  new StopException();
@@ -64,7 +63,7 @@ public class FilterGreaterThanSinglesCountCommand extends Command {
 
             generalResponse = new GeneralResponse(
                     client,
-                    UCStatus.OK,
+                    CRStatus.OK,
                     filteredMusicBands
             );
         } catch (StopException ignore) {}

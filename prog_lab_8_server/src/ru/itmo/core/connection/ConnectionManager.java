@@ -1,7 +1,10 @@
 package ru.itmo.core.connection;
 
+import ru.itmo.core.common.exchange.Client;
+import ru.itmo.core.common.exchange.request.ClientRequest;
 import ru.itmo.core.common.exchange.request.Request;
 import ru.itmo.core.common.exchange.response.Response;
+import ru.itmo.core.common.exchange.response.ServerResponse;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -40,17 +43,17 @@ public class ConnectionManager {
 //    }
 
 
-    public void sendResponse(Response response) throws IOException {
+    public void sendResponse(ServerResponse response) throws IOException {
 
         send(
-                response.getClientInetAddress(),
-                response.getClientPort(),
+                response.getClient().getAddress(),
+                response.getClient().getPort(),
                 Serializer.toByteArray(response));
 
         System.out.println(
                 "The response was sent." +
-                "\n    Address : " + response.getClientInetAddress() +
-                "\n    Port : .. " + response.getClientPort());
+                "\n    Address : " + response.getClient().getAddress() +
+                "\n    Port : .. " + response.getClient().getPort());
 
     }
 
@@ -63,18 +66,18 @@ public class ConnectionManager {
     }
 
 
-    public void sendResponseAndCloseSocket(Response response) throws IOException {
-        send(response.getClientInetAddress(), response.getClientPort(), Serializer.toByteArray(response));
+    public void sendResponseAndCloseSocket(ServerResponse response) throws IOException {
+        send(response.getClient().getAddress(), response.getClient().getPort(), Serializer.toByteArray(response));
         System.out.println(
                 "The response was sent." +
-                        "\n    Address : " + response.getClientInetAddress() +
-                        "\n    Port : " + response.getClientPort());
+                        "\n    Address : " + response.getClient().getAddress() +
+                        "\n    Port : " + response.getClient().getPort());
         serverSocket.close();
 
     }
 
 
-    public Request receiveRequest() throws IOException, ClassNotFoundException {
+    public ClientRequest receiveRequest() throws IOException, ClassNotFoundException {
 
         byte[] buffer = new byte[bufferSize];
 
@@ -87,10 +90,14 @@ public class ConnectionManager {
                 "\n    Request address : " + packet.getAddress() +
                 "\n    Request port : .. " + packet.getPort());
 
-        Request request = (Request) Serializer.toObject(buffer);
+        ClientRequest request = (ClientRequest) Serializer.toObject(buffer);
 
-        request.setClientInetAddress(packet.getAddress());
-        request.setClientPort(packet.getPort());
+        request.setClient(
+                new Client(
+                        packet.getAddress(),
+                        packet.getPort()
+                )
+        );
 
 
         return request;

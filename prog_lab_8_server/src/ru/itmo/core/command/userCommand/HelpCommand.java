@@ -1,14 +1,14 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.HelpCommandRequest;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.main.MainMultithreading;
 
 
 
-public class HelpCommand extends Command {
+public class HelpCommand extends UserCommand {
 
 
     public static String syntaxDescription =
@@ -54,7 +54,7 @@ public class HelpCommand extends Command {
 
         GeneralResponse generalResponse = new GeneralResponse(
                 client,
-                UCStatus.OK,
+                CRStatus.OK,
                 help
         );
 

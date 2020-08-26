@@ -1,13 +1,13 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.classes.MusicBand;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.User;
 import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.InsertCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.AddElementResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.AddOwnedElementsIDServiceResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.StopException;
 import ru.itmo.core.main.DataBaseManager;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 
 
-public class InsertCommand extends Command {
+public class InsertCommand extends UserCommand {
 
 
 
@@ -66,7 +66,7 @@ public class InsertCommand extends Command {
 
             generalResponse = new GeneralResponse(
                     client,
-                    UCStatus.OK,
+                    CRStatus.OK,
                     String.format(
                             "Element with ID = '%s' successfully added to collection.",
                             ID)
@@ -77,7 +77,7 @@ public class InsertCommand extends Command {
         } catch (DBException e) {
             generalResponse = new GeneralResponse(
                     client,
-                    UCStatus.ERROR,
+                    CRStatus.ERROR,
                     e.getMessage());
         } finally {
 
@@ -87,7 +87,10 @@ public class InsertCommand extends Command {
 
                 if ( collectionChanged ) {
                     main.addMultidirectionalResponse(new AddElementResponse(element));
-                    main.addUnidirectionalResponse(new AddOwnedElementsIDServiceResponse(client, ID));
+                    main.addUnidirectionalResponse(new AddOwnedElementsIDServiceResponse(
+                            client,
+                            CRStatus.OK,
+                            ID));
                 }
 
                 main.addUnidirectionalResponse(generalResponse);

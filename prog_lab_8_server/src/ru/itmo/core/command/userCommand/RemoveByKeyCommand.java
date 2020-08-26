@@ -1,14 +1,13 @@
-package ru.itmo.core.command;
+package ru.itmo.core.command.userCommand;
 
 import ru.itmo.core.common.classes.MusicBand;
-import ru.itmo.core.common.classes.MusicGenre;
 import ru.itmo.core.common.exchange.Client;
 import ru.itmo.core.common.exchange.User;
-import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.RemoveAllByGenreCommandRequest;
+import ru.itmo.core.common.exchange.request.clientRequest.userCommandRequest.RemoveByKeyCommandRequest;
 import ru.itmo.core.common.exchange.response.serverResponse.multidirectional.RemoveElementsResponse;
+import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.CRStatus;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.seviceResponse.background.RemoveOwnedElementsIDServiceResponse;
 import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.GeneralResponse;
-import ru.itmo.core.common.exchange.response.serverResponse.unidirectional.userResponse.UCStatus;
 import ru.itmo.core.exception.DBException;
 import ru.itmo.core.exception.InvalidCommandException;
 import ru.itmo.core.exception.StopException;
@@ -17,42 +16,40 @@ import ru.itmo.core.main.MainMultithreading;
 
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-public class RemoveAllByGenreCommand extends Command {
 
+
+public class RemoveByKeyCommand extends UserCommand {
 
 
     private MainMultithreading main;
     private ConcurrentSkipListMap<Integer, MusicBand> collection;
 
-    public RemoveAllByGenreCommand(MainMultithreading main) {
+
+    public RemoveByKeyCommand(MainMultithreading main) {
         setMain(main);
         setCollection(main.getCollection());
     }
 
     public static String syntaxDescription =
-            "\nCommand: remove_all_by_genre <genre>" +
-                    "\nDescription: Removes all the elements, which field 'genre' value matches the specified." +
+            "\nCommand: remove_key <key>" +
+                    "\nDescription: Removes an element with the specified key." +
                     "\nNumber of arguments: 1" +
-                    "\n   Argument: genre (MusicGenre)\n";
+                    "\n   Argument: key (Integer)\n";
 
 
-
-    public void execute(RemoveAllByGenreCommandRequest request) {
+    public void execute(RemoveByKeyCommandRequest request) {
 
         Connection connection = main.getConnection();
 
-        MusicGenre genre = request.getGenre();
+        Integer ID = request.getID();
         User user = request.getUser();
         Client client = request.getClient();
 
         GeneralResponse generalResponse = null;
 
         boolean collectionChanged = false;
-
-        ArrayList<Integer> musicBandsIDToRemove = new ArrayList<>();
 
         try {
 
@@ -61,66 +58,75 @@ public class RemoveAllByGenreCommand extends Command {
             } catch (InvalidCommandException e) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.ERROR,
-                        e.getMessage()
-                );
-                throw  new StopException();
+                        CRStatus.ERROR,
+                        e.getMessage());
+                throw new StopException();
             }
 
-            ArrayList<Integer> ownedMusicBandsByUser = DataBaseManager.getOwnedMusicBandsByUser(connection, user);
-
-            collection
-                    .values()
-                    .forEach(mb -> {
-                        if (
-                                mb.getGenre() == genre
-                                & ownedMusicBandsByUser.contains(mb.getId())) {
-                                    DataBaseManager.removeMusicBandByID(connection, mb.getId());
-                                    DataBaseManager.removeOwnedMusicBand(connection, user, mb.getId());
-                                    collection.remove(mb.getId());
-
-                                    musicBandsIDToRemove.add(mb.getId());
-                                }
-                    });
-
-            if ( musicBandsIDToRemove.isEmpty() ) {
+            if ( ! collection.containsKey(ID)) {
                 generalResponse = new GeneralResponse(
                         client,
-                        UCStatus.NEUTRAL,
-                        "No elements were removed."
-                );
-
-            } else {
-                collectionChanged = true;
-                generalResponse = new GeneralResponse(
-                        client,
-                        UCStatus.OK,
+                        CRStatus.ERROR,
                         String.format(
-                                "Elements with IDs = '%s' were successfully removed.",
-                                musicBandsIDToRemove)
+                            "No element with ID = '%s' in the collection.",
+                                ID)
                 );
+                throw new StopException();
             }
+
+            if ( ! DataBaseManager.userOwnsMusicBand(connection, user, ID)) {
+                generalResponse = new GeneralResponse(
+                        client,
+                        CRStatus.ERROR,
+                        String.format(
+                            "You can't remove element with ID = '%s' as you don't own it.",
+                        ID)
+                );
+                throw new StopException();
+
+            }
+
+            DataBaseManager.removeMusicBandByID(connection, ID);
+            DataBaseManager.removeOwnedMusicBand(connection, user, ID);
+            collection.remove(ID);
+
+            collectionChanged = true;
+
+            generalResponse = new GeneralResponse(
+                    client,
+                    CRStatus.OK,
+                    String.format(
+                            "Element with ID = '%s' successfully removed.",
+                            ID)
+            );
 
         } catch (StopException ignored) {
         } catch (DBException e) {
             generalResponse = new GeneralResponse(
                     client,
-                    UCStatus.ERROR,
+                    CRStatus.ERROR,
                     e.getMessage());
         } finally {
+
+            main.returnConnection(connection);
 
             if (generalResponse != null) {
 
                 if ( collectionChanged ) {
-                    main.addMultidirectionalResponse(new RemoveElementsResponse(musicBandsIDToRemove));
-                    main.addUnidirectionalResponse(new RemoveOwnedElementsIDServiceResponse(client, musicBandsIDToRemove));
+                    main.addMultidirectionalResponse(new RemoveElementsResponse(ID));
+                    main.addUnidirectionalResponse(new RemoveOwnedElementsIDServiceResponse(
+                            client,
+                            CRStatus.OK,
+                            ID));
                 }
 
                 main.addUnidirectionalResponse(generalResponse);
+
+
             }
+
         }
     }
-
 
 
     public void setMain(MainMultithreading main) {
@@ -139,6 +145,5 @@ public class RemoveAllByGenreCommand extends Command {
 
         this.collection = collection;
     }
-
 
 }
