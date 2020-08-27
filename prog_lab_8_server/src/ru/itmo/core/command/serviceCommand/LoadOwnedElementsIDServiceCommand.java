@@ -12,11 +12,11 @@ import ru.itmo.core.main.MainMultithreading;
 import java.sql.Connection;
 import java.util.List;
 
-public class LoadOwnedElementsServiceCommand extends ServiceCommand {
+public class LoadOwnedElementsIDServiceCommand extends ServiceCommand {
 
     private MainMultithreading main;
 
-    public LoadOwnedElementsServiceCommand(MainMultithreading main) {
+    public LoadOwnedElementsIDServiceCommand(MainMultithreading main) {
         this.main = main;
     }
 
@@ -37,7 +37,7 @@ public class LoadOwnedElementsServiceCommand extends ServiceCommand {
             response = new LoadOwnedElementsIDServiceResponse(
                     client,
                     CRStatus.OK,
-                    "Owned elements loaded successfully.",
+                    "Owned elements ID loaded successfully.",
                     ownedMusicBandsIDByUser
             );
         } catch (DBException e) {

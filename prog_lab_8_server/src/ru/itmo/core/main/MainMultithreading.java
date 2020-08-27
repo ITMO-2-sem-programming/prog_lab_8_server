@@ -45,8 +45,8 @@ public class MainMultithreading {
             = new LinkedBlockingQueue<>();
 
 
-    ConcurrentSkipListSet<Client> clients
-            = new ConcurrentSkipListSet<>();
+    ConcurrentLinkedQueue<Client> clients
+            = new ConcurrentLinkedQueue<>();
 
     ConcurrentLinkedQueue<Connection> connectionsList
             = new ConcurrentLinkedQueue<>(); // Хранит подключения к БД
