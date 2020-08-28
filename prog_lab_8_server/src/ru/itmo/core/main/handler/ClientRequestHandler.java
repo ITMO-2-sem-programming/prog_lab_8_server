@@ -22,6 +22,7 @@ public class ClientRequestHandler {
 
 
     public void handle(ClientRequest clientRequest) {
+        System.out.println(1);
 
         if (clientRequest instanceof UserCommandRequest) {
             ucHandler.handle((UserCommandRequest) clientRequest);

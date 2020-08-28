@@ -7,7 +7,6 @@ public class RegisterUserServiceResponse extends ServiceResponse {
 
 
     private boolean registered;
-    private String message;
 
 
 
@@ -30,8 +29,5 @@ public class RegisterUserServiceResponse extends ServiceResponse {
     }
 
 
-    public String getMessage() {
-        return message;
-    }
 
 }

@@ -17,7 +17,6 @@ import java.sql.SQLException;
 import java.util.concurrent.*;
 
 public class MainMultithrreadingBuffer {
-
     int serverPort = 44321;
 
     String dataBaseUrl; // Адрес БД с проброшенным портом
@@ -98,39 +97,52 @@ public class MainMultithrreadingBuffer {
         ExecutorService sendMultidirectionalResponsePool = Executors.newFixedThreadPool(sendResponsePoolCapacity);
 
 
-        ClientRequestHandler requestHandler = new ClientRequestHandler(new MainMultithreading());//
-        /////**********************************88 // TODO: 26.08.2020  
+        ClientRequestHandler requestHandler = null;
+//                new ClientRequestHandler(this); // TODO: 28.08.2020 ************** 
 
 
         Runnable sendUnidirectionalResponseTask = () -> {
 
-            UnidirectionalResponse unidirectionalResponse = unidirectionalResponsesQueue.poll();
+            while (unidirectionalResponsesQueue.size() != 0) {
 
-            if (unidirectionalResponse == null) return;
+                System.out.println("uniR sending...");
 
-            try {
-                connectionManagerSender.sendResponse(unidirectionalResponse);
+                UnidirectionalResponse unidirectionalResponse = unidirectionalResponsesQueue.poll();
 
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
+                if (unidirectionalResponse != null) {
+
+                    try {
+                        connectionManagerSender.sendResponse(unidirectionalResponse);
+
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
             }
+
         };
 
 
         Runnable sendMultidirectionalResponseTask = () -> {
 
-            MultidirectionalResponse multidirectionalResponse = multidirectionalResponsesQueue.poll();
+            while (multidirectionalResponsesQueue.size() != 0) {
 
-            if (multidirectionalResponse == null) return;
+                System.out.println("multiR sending...");
 
-            try {
-                for (Client client : clients) {
-                    multidirectionalResponse.setClient(client);
-                    connectionManagerSender.sendResponse(multidirectionalResponse);
+                MultidirectionalResponse multidirectionalResponse = multidirectionalResponsesQueue.poll();
+
+                if (multidirectionalResponse != null) {
+
+                    try {
+                        for (Client client : clients) {
+                            multidirectionalResponse.setClient(client);
+                            connectionManagerSender.sendResponse(multidirectionalResponse);
+                        }
+
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
-
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
             }
 
         };

@@ -37,6 +37,6 @@ public class ServiceCommandHandler {
             loadOwnedElementsServiceCommand.handle((LoadOwnedElementsServiceRequest) serviceRequest);
         } else if (serviceRequest instanceof RegisterUserServiceRequest) {
             registerUserServiceCommand.handle((RegisterUserServiceRequest) serviceRequest);
-        }
+        } else throw new IllegalArgumentException("Unknown serviceRequest");
     }
 }
